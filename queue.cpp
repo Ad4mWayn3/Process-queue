@@ -1,30 +1,54 @@
-#include <thread>
-#include <vector>
-
-struct Process {
-    const char* name;
-    unsigned priority;
-};
-
-struct Node {
-    Node* prev = nullptr;
-    Process* curr;
-    Node* next = nullptr;
-};
-
-struct Queue {
-    Node _begin;
-    Process* _end;
+template <class T>
+struct DLinkList {
+    T& value;
+    DLinkList<T>* prev;
+    DLinkList<T>* next;
     
-    Queue& push(Process process){
-        _begin.next = _begin.curr;
-        _begin.next.
-        _begin.curr = new Process{process};
+    ~DLinkList<T>() {
+        if (prev) prev->next = nullptr;
+        if (next) next->prev = nullptr;
+    }
+};
+
+template <class T>
+struct Queue {
+    DLinkList<T>* head;
+    DLinkList<T>* tail;
+    
+    static Queue<T> empty() {
+        Queue<T> out;
+        out.head = nullptr;
+        out.tail = nullptr;
+        return out;
+    }
+    
+    static Queue<T> build(T& value) {
+        Queue<T> out;
+        out.head = new DLinkList<T>{value, nullptr, nullptr};
+        out.tail = out.head;
+        return out;
+    }
+    
+    Queue<T>& push(T& value) {
+        if (!head) {
+            *this = Queue<T>::build(value);
+            return *this;
+        }
+        
+        if (head && (head == tail)) {
+            head->next = new DLinkList<T>{value, head, nullptr};
+            tail = head->next;
+            return *this;
+        }
+        
+        tail->next = new DLinkList<T>{value, tail, nullptr};
+        tail = tail->next;
         return *this;
     }
     
-    Process* pop(){
-        Process* out = _end;
-        
+    T& pop() {
+        T& out = head->value;
+        delete head;
+        return out;
     }
 };
